@@ -8,37 +8,66 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
-class User extends Authenticatable
+class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-    /**
-     * The attributes that are mass assignable.
-     *
-     * @var array<int, string>
-     */
     protected $fillable = [
         'name',
         'email',
         'password',
     ];
 
-    /**
-     * The attributes that should be hidden for serialization.
-     *
-     * @var array<int, string>
-     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    /**
-     * The attributes that should be cast.
-     *
-     * @var array<string, string>
-     */
     protected $casts = [
         'email_verified_at' => 'datetime',
     ];
+
+    public function courses()
+    {
+        return $this->belongsToMany(Course::class, 'student_courses')
+                    ->withPivot(['status', 'grade', 'progress', 'custom_weights'])
+                    ->withTimestamps();
+    }
+
+    public function progressReports()
+    {
+        return $this->hasMany(ProgressReport::class);
+    }
+
+    public function notifications()
+    {
+        return $this->hasMany(Notification::class);
+    }
+
+    public function getUnreadNotificationsCount()
+    {
+        return $this->notifications()->where('status', 'unread')->count();
+    }
+
+    public function enrollInCourse(Course $course)
+    {
+        return $this->courses()->attach($course->id, [
+            'status' => 'enrolled',
+            'progress' => 0,
+        ]);
+    }
+
+    public function dropCourse(Course $course)
+    {
+        return $this->courses()->updateExistingPivot($course->id, [
+            'status' => 'dropped'
+        ]);
+    }
+
+    public function updateCourseProgress(Course $course, $progress)
+    {
+        return $this->courses()->updateExistingPivot($course->id, [
+            'progress' => $progress
+        ]);
+    }
 }
