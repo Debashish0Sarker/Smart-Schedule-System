@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
+use App\Models\Admin;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
@@ -93,6 +94,39 @@ class AuthController extends Controller
 
         return response()->json([
             'message' => 'Logged out successfully'
+        ]);
+    }
+
+    public function adminLogin(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required',
+        ]);
+
+        $admin = Admin::where('email', $request->email)->first();
+
+        if (!$admin || !Hash::check($request->password, $admin->password)) {
+            return response()->json([
+                'message' => 'Invalid admin credentials'
+            ], 401);
+        }
+
+        $token = $admin->createToken('admin_token')->plainTextToken;
+
+        return response()->json([
+            'message' => 'Admin login successful',
+            'admin' => $admin,
+            'token' => $token
+        ]);
+    }
+
+    public function adminLogout(Request $request)
+    {
+        $request->user()->currentAccessToken()->delete();
+
+        return response()->json([
+            'message' => 'Admin logged out successfully'
         ]);
     }
 }

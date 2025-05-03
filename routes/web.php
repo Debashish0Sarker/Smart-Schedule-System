@@ -16,3 +16,14 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('home');
 });
+
+// Admin Routes
+Route::prefix('admin')->group(function () {
+    Route::get('/login', function () {
+        return view('admin.login');
+    })->middleware('guest')->name('admin.login');
+
+    Route::get('/dashboard', function () {
+        return view('admin.dashboard');
+    })->middleware(['auth:sanctum', 'admin'])->name('admin.dashboard');
+});
