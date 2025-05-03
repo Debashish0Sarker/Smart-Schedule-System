@@ -18,4 +18,9 @@ class Course extends Model
                     ->withPivot('grade', 'status')
                     ->withTimestamps();
     }
+    
+    public function assignments()
+    {
+        return $this->hasMany(Assignment::class);
+    }
 }
