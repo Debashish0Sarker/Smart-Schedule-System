@@ -14,6 +14,7 @@ return new class extends Migration
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->decimal('grade', 5, 2)->nullable();
             $table->string('status')->default('enrolled');
+            $table->decimal('progress', 5, 2)->default(0);
             $table->timestamps();
         });
     }

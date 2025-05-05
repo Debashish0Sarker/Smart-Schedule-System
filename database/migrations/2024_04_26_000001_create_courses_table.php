@@ -12,8 +12,8 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->text('description')->nullable();
-            $table->integer('credits');
-            $table->string('course_code')->unique();
+            $table->integer('credits')->default(3);
+            $table->string('code')->unique();
             $table->timestamps();
             $table->softDeletes();
         });

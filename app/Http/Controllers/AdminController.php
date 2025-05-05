@@ -21,6 +21,16 @@ class AdminController extends Controller
         if ($request->has('name')) {
             $query->where('name', 'like', '%' . $request->name . '%');
         }
+        
+        if ($request->has('q')) {
+            // Generic search term that could match name, email, or student ID
+            $searchTerm = $request->q;
+            $query->where(function($q) use ($searchTerm) {
+                $q->where('name', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('email', 'like', '%' . $searchTerm . '%')
+                  ->orWhere('student_id', 'like', '%' . $searchTerm . '%');
+            });
+        }
 
         return response()->json($query->with('courses')->get());
     }

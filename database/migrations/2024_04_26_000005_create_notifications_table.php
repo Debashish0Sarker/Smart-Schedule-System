@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('notifications', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
             $table->string('title');
             $table->text('message');
             $table->string('type');
@@ -18,6 +18,9 @@ return new class extends Migration
             $table->json('data')->nullable();
             $table->timestamp('read_at')->nullable();
             $table->timestamps();
+            
+            // Instead of a direct foreign key constraint, we use an index
+            $table->index('user_id');
         });
     }
 

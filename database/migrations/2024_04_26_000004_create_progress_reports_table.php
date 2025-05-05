@@ -10,7 +10,7 @@ return new class extends Migration
     {
         Schema::create('progress_reports', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->unsignedBigInteger('user_id');
             $table->foreignId('course_id')->constrained()->onDelete('cascade');
             $table->enum('report_type', ['daily', 'weekly', 'semester']);
             $table->decimal('completion_rate', 5, 2);
@@ -20,6 +20,9 @@ return new class extends Migration
             $table->json('performance_metrics')->nullable();
             $table->date('report_date');
             $table->timestamps();
+            
+            // We're creating a flexible foreign key that could reference either users or students table
+            $table->index('user_id');
         });
     }
 

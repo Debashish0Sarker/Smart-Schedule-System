@@ -123,4 +123,99 @@ class AssignmentController extends Controller
             'progress' => $progress
         ]);
     }
+
+    public function getUpcomingAssignments(Request $request)
+    {
+        $user = $request->user();
+        $now = now();
+        $oneWeekFromNow = $now->copy()->addDays(7);
+        
+        // Get IDs of courses the student is enrolled in
+        $courseIds = $user->courses()->pluck('course_id');
+        
+        // Get upcoming assignments for these courses
+        $upcomingAssignments = Assignment::whereIn('course_id', $courseIds)
+            ->where('due_date', '>=', $now)
+            ->where('due_date', '<=', $oneWeekFromNow)
+            ->orderBy('due_date')
+            ->with('course')
+            ->get();
+            
+        return response()->json($upcomingAssignments);
+    }
+
+    public function getStudentAssignments(Request $request)
+    {
+        $user = $request->user();
+        $status = $request->query('status');
+        
+        // Get IDs of courses the student is enrolled in
+        $courseIds = $user->courses()->pluck('course_id');
+        
+        // Base query for assignments in enrolled courses
+        $query = Assignment::whereIn('course_id', $courseIds)
+                 ->with('course');
+                 
+        // Filter by status if provided
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        $assignments = $query->orderBy('due_date')->get();
+        
+        return response()->json($assignments);
+    }
+    
+    public function getStudentCourseAssignments(Request $request, Course $course)
+    {
+        $user = $request->user();
+        $status = $request->query('status');
+        
+        // Check if student is enrolled in this course
+        if (!$user->courses()->where('course_id', $course->id)->exists()) {
+            return response()->json(['message' => 'You are not enrolled in this course'], 403);
+        }
+        
+        // Query for assignments in this course
+        $query = Assignment::where('course_id', $course->id);
+        
+        // Filter by status if provided
+        if ($status && $status !== 'all') {
+            $query->where('status', $status);
+        }
+        
+        $assignments = $query->with('course')->orderBy('due_date')->get();
+        
+        return response()->json($assignments);
+    }
+    
+    public function markAsComplete(Request $request, Assignment $assignment)
+    {
+        $user = $request->user();
+        
+        // Check if student is enrolled in the course this assignment belongs to
+        if (!$user->courses()->where('course_id', $assignment->course_id)->exists()) {
+            return response()->json(['message' => 'You are not enrolled in this course'], 403);
+        }
+        
+        // Update assignment status
+        $assignment->status = 'completed';
+        $assignment->save();
+        
+        // Calculate and update course progress
+        $totalAssignments = $assignment->course->assignments()->count();
+        $completedAssignments = $assignment->course->assignments()
+                                    ->where('status', 'completed')
+                                    ->orWhere('status', 'overdue')
+                                    ->count();
+                                    
+        $progress = ($completedAssignments / $totalAssignments) * 100;
+        $user->updateCourseProgress($assignment->course, $progress);
+        
+        return response()->json([
+            'message' => 'Assignment marked as complete',
+            'status' => 'completed',
+            'progress' => $progress
+        ]);
+    }
 }
