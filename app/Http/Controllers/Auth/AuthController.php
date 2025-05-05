@@ -199,10 +199,11 @@ class AuthController extends Controller
             $admin = auth()->guard('admin')->user();
             $token = $admin->createToken('admin_token')->plainTextToken;
             
-            // Store token in session for API requests
+            // Store token in session and cookie
             session(['admin_token' => $token]);
+            $cookie = cookie('admin_token', $token, 60 * 24); // 24 hours
             
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard')->withCookie($cookie);
         }
         
         // Manual fallback if guard attempt fails
@@ -213,10 +214,11 @@ class AuthController extends Controller
             auth()->guard('admin')->login($admin);
             $token = $admin->createToken('admin_token')->plainTextToken;
             
-            // Store token in session for API requests
+            // Store token in session and cookie
             session(['admin_token' => $token]);
+            $cookie = cookie('admin_token', $token, 60 * 24); // 24 hours
             
-            return redirect()->route('admin.dashboard');
+            return redirect()->route('admin.dashboard')->withCookie($cookie);
         }
         
         // Authentication failed

@@ -101,4 +101,20 @@ Route::middleware(['auth:sanctum', 'admin'])->prefix('admin')->group(function ()
     Route::get('/complaints', [AdminController::class, 'getComplaints']);
     Route::post('/complaints/{complaint}/reply', [AdminController::class, 'replyToComplaint']);
     Route::get('/students/category', [AdminController::class, 'getUsersByCategory']);
+    Route::get('/dashboard/stats', [AdminController::class, 'getDashboardStats']);
+    
+    // Course management routes
+    Route::get('/courses', [AdminController::class, 'getCourses']);
+    Route::post('/courses', [AdminController::class, 'storeCourse']);
+    Route::get('/courses/{course}', [AdminController::class, 'getCourseDetails']);
+    Route::put('/courses/{course}', [AdminController::class, 'updateCourse']);
+    Route::delete('/courses/{course}', [AdminController::class, 'deleteCourse']);
+    
+    // Enrollment management routes
+    Route::post('/courses/{course}/enrollments', [AdminController::class, 'manageEnrollments']);
+    Route::get('/courses/{course}/enrollment-status', [AdminController::class, 'getEnrollmentStatus']);
+    
+    // Academic Progress routes
+    Route::get('/academic-progress', [AdminController::class, 'getAcademicProgress']);
+    Route::post('/progress-report', [AdminController::class, 'generateProgressReport']);
 });
