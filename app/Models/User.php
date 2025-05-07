@@ -10,13 +10,27 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    // Specify the custom table name
-    protected $table = 'student';  // Ensure this matches your database table name
+    // Use custom table name
+    protected $table = 'student';
 
     // The attributes that are mass assignable
     protected $fillable = [
-        'name', 'student_id', 'dob', 'email', 'password'
+        'name',
+        'student_id',
+        'dob',
+        'email',
+        'password',
     ];
 
-    // You can add more methods here if necessary
+    // Relationship: User has many notification settings
+    public function notificationSettings()
+    {
+        return $this->hasMany(NotificationSetting::class);
+    }
+
+    // Optional: Used for broadcasting notifications (e.g., Laravel Echo)
+    public function routeNotificationForBroadcast()
+    {
+        return 'user.' . $this->id;
+    }
 }

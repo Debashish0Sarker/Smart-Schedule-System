@@ -44,7 +44,22 @@ class RegisterController extends Controller
             'email' => $request->email,
             'password' => Hash::make($request->password),  // Hash the password
         ]);
-
+        ////////////////////////////////////////////
+        $user->notificationSettings()->createMany([
+            [
+              'type'         => 'assignment_due',
+              'enabled'      => true,
+              'frequency'    => 'once',
+              'before_hours' => 24,
+            ],
+            [
+              'type'         => 'new_registration',
+              'enabled'      => true,
+              'frequency'    => 'once',
+              'before_hours' => 0,
+            ],
+        ]);
+        /////////////////////////
         // Redirect to login page with success message
         return redirect()->route('login')->with('success', 'Registration successful. Please log in.');
     }
